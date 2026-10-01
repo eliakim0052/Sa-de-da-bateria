@@ -1,9 +1,9 @@
 Write-Host "======= ANALISANDO A SAUDE DA BATERIA =======" -ForegroundColor Cyan
 
-powercfg /batteryreport /output "\$env:TEMP\bateria_temp.html" | Out-Null
+powercfg /batteryreport /output "bateria_temp.html" | Out-Null
 
-if (Test-Path "\$env:TEMP\bateria_temp.html") {
-    Set-Variable -Name "Relatorio" -Value (Get-Content "\$env:TEMP\bateria_temp.html" -Raw)
+if (Test-Path "bateria_temp.html") {
+    Set-Variable -Name "Relatorio" -Value (Get-Content "bateria_temp.html" -Raw)
     
     Set-Variable -Name "DesignStr" -Value ([regex]::Match((gv Relatorio).Value, 'DESIGN CAPACITY<\/td><td class="value">([\d\s,]+)\smWh').Groups[1].Value)
     Set-Variable -Name "FullStr" -Value ([regex]::Match((gv Relatorio).Value, 'FULL CHARGE CAPACITY<\/td><td class="value">([\d\s,]+)\smWh').Groups[1].Value)
@@ -14,7 +14,8 @@ if (Test-Path "\$env:TEMP\bateria_temp.html") {
     if ((gv DesignCap).Value -gt 0 -and (gv FullCap).Value -gt 0) {
         Set-Variable -Name "Porcentagem" -Value ([math]::Round(((gv FullCap).Value / (gv DesignCap).Value) * 100, 2))
 
-        Write-Host "`nCapacidade de Fabrica: \$((gv DesignCap).Value) mWh" -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "Capacidade de Fabrica: \$((gv DesignCap).Value) mWh" -ForegroundColor Yellow
         Write-Host "Capacidade Maxima Atual: \$((gv FullCap).Value) mWh" -ForegroundColor Yellow
         Write-Host "---------------------------------------------" -ForegroundColor Gray
         Write-Host "A Saude da sua Bateria esta em: " -NoNewline -ForegroundColor White
@@ -34,6 +35,7 @@ if (Test-Path "\$env:TEMP\bateria_temp.html") {
     } else {
         Write-Host "`nNao foi possivel extrair os valores de capacidade. Certifique-se de que este aparelho e um notebook." -ForegroundColor Red
     }
+    Remove-Item "bateria_temp.html" -Force -ErrorAction SilentlyContinue
 } else {
     Write-Host "`nErro ao criar o relatorio de bateria local." -ForegroundColor Red
 }
